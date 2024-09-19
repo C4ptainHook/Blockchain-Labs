@@ -1,4 +1,5 @@
 ﻿using IP_2102.TB.BBD.Configs;
+using IP_2102.TB.BBD.Mining;
 using IP_2102.TB.BBD.ProofOfWork;
 using IP_2102.TB.BBD.ProofOfWork.Factories;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +12,7 @@ internal class Program
     static void Main(string[] args)
     {
         var host = AppSetup.GetConfiguration();
-        var proofOfWorkFactory = host.Services.GetRequiredService< BasicProofOfWorkFactory>();
-        var proofOfWorkArgs = new ProofOfWorkArgs(TBConfig.DD, int.Parse(TBConfig.MMYYYY));
-        var proofOfWork = proofOfWorkFactory.CreateProofOfWork(proofOfWorkArgs);
-        var miner = new Miner(proofOfWork);
+        var miner = host.Services.GetRequiredService<Miner>();
         var resultBlockChain = miner.Mine(2);
     }
 }

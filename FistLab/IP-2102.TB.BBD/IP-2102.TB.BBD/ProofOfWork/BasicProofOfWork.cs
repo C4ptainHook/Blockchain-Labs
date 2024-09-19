@@ -14,14 +14,18 @@ internal class BasicProofOfWork(IRandomNumerical<int> random, ProofOfWorkArgs ar
     {
         _logger.LogInformation("Starting proof of work");
         var nonce = int.Parse(TBConfig.DD + TBConfig.MM);
-        while (!HashWithContainsDifficulty(GetCurrentHash(nonce, lastBlockHash)))
+        var iteration = 0;
+        while (!HashWithContainsDifficulty(GetHashFromGuess(nonce, lastBlockHash)))
         {
             nonce = _random.Next(1, args.NonceMaxValue);
+            iteration++;
         }
+        _logger.LogInformation("Number of iterations: {counter}", iteration);
+        _logger.LogInformation("Proof of work found: {nonce}", nonce);
         return nonce;
     }
 
-    public string GetCurrentHash(in int nonce, in string lastHash)
+    public string GetHashFromGuess(in int nonce, in string lastHash)
     {
         var guess = nonce.ToString() + lastHash;
         using var sha256 = SHA256.Create();

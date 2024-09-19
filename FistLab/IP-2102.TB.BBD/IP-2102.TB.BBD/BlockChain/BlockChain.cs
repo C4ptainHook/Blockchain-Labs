@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Collections;
+using System.Security.Cryptography;
 using System.Text;
 using IP_2102.TB.BBD.Transactions;
 
@@ -13,7 +14,10 @@ internal class BlockChain : IBlockChain
     {
         get { return _chain?.Last() ?? throw new InvalidOperationException("No genesis block in the chain"); }
     }
-
+    public Block this[int index]
+    {
+        get { return _chain[index]; }
+    }
     public BlockChain()
     {
         NewBlock_Boiko(100, "0");
@@ -49,5 +53,15 @@ internal class BlockChain : IBlockChain
 
         byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashingInput));
         return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+    }
+
+    public IEnumerator<Block> GetEnumerator()
+    {
+        return _chain.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

@@ -9,50 +9,34 @@ internal class BlockChain : IBlockChain
 {
     private readonly List<Block> _chain = [];
     private readonly List<Transaction> _currentTransactions = [];
-
+    
+    public int LastIndex => _chain.Count - 1;
     public Block LastBlock
     {
-        get { return _chain?.Last() ?? throw new InvalidOperationException("No genesis block in the chain"); }
+        get { return _chain?.Last() ?? 
+                throw new InvalidOperationException("No genesis block in the chain"); }
     }
+
     public Block this[int index]
     {
         get { return _chain[index]; }
     }
     public BlockChain()
     {
-        NewBlock_Boiko(100, "0");
+        var genesisBlockArgs = new BlockArgs(1, DateTime.Now, 0, null);
+        var genesisBlock = new Block(new object(), genesisBlockArgs);
+        _chain.Add(genesisBlock);
     }
 
-    public Block NewBlock_Boiko(int proof, string previousHash)
+    public void AddBlock_Boiko(Block newBlock)
     {
-        var transactionsCopy = new List<Transaction>(_currentTransactions);
-        var resultBlock = new Block(_chain.Count, transactionsCopy, proof, previousHash);
-        _currentTransactions.Clear();
-        _chain.Add(resultBlock);
-        return resultBlock;
+        _chain.Add(newBlock);
     }
 
-    public int NewTransaction_Boiko(string sender, string recipient, int amount)
+    public int RegisterTransaction_Boiko(string sender, string recipient, int amount)
     {
         _currentTransactions.Add(new Transaction(sender, recipient, amount));
         return _chain.Count;
-    }
-
-    public string Hash_Boiko(Block block)
-    {
-        var hashingInputBuilder = new StringBuilder();
-
-        hashingInputBuilder.Append(block.Index)
-                           .Append(block.TimeStamp)
-                           .Append(block.Proof)
-                           .Append(block.PreviousHash);
-
-        var hashingInput = hashingInputBuilder.ToString();
-
-        using var sha256 = SHA256.Create();
-
-        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashingInput));
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
     }
 
     public IEnumerator<Block> GetEnumerator()

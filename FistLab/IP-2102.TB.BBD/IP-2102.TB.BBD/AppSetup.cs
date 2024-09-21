@@ -1,4 +1,5 @@
-﻿using IP_2102.TB.BBD.Mining;
+﻿using IP_2102.TB.BBD.CryptoChain;
+using IP_2102.TB.BBD.Mining;
 using IP_2102.TB.BBD.ProofOfWork;
 using IP_2102.TB.BBD.ProofOfWork.Factories;
 using IP_2102.TB.BBD.RandomWrappers;
@@ -27,6 +28,7 @@ namespace IP_2102.TB.BBD
                     services.AddTransient<IRandomNumerical<int>, RandomWrapper>();
                     services.AddTransient<BasicProofOfWorkFactory>();
                     services.AddTransient<IProofOfWorkFactory<ProofOfWorkArgs>, BasicProofOfWorkFactory>();
+                    services.AddTransient<IBlockChain, BlockChain>();
                     services.AddTransient<Miner>();
                 })
                 .UseSerilog()

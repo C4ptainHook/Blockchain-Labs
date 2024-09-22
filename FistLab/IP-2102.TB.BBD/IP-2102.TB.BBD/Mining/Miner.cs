@@ -1,4 +1,5 @@
-﻿using IP_2102.TB.BBD.Configs;
+﻿using System.Text;
+using IP_2102.TB.BBD.Configs;
 using IP_2102.TB.BBD.CryptoChain;
 using IP_2102.TB.BBD.ProofOfWork;
 using IP_2102.TB.BBD.ProofOfWork.Factories;
@@ -23,27 +24,29 @@ internal class Miner : IMiner
         var nonce = int.Parse(TBConfig.DD + TBConfig.MM);
         var minedSuccesfully = false;
         var newBlockIndex = _blockchain.LastIndex + 1;
-        var lastBlockHash = _proofOfWork.GetHash(_blockchain.LastBlock);
+        var lastBlockHash = _proofOfWork.GetHash(_blockchain.LastBlock) ?? String.Empty;
         var iteration = 0;
-        _logger.LogInformation("Start mining block {newBlockIndex}", newBlockIndex);
+        Block newBlock = default!;
+        _logger.LogInformation("START mining block {newBlockIndex}", newBlockIndex);
         while (!minedSuccesfully)
         {
             var blockArgs = new BlockArgs(newBlockIndex, DateTime.Now, nonce, lastBlockHash);
-            var newBlock = new Block(new object(), blockArgs);
-            if (_proofOfWork.IsHashValid(_proofOfWork.GetHash(newBlock)))
+            newBlock = new Block(new object(), blockArgs);
+            if (_proofOfWork.IsHashValid(_proofOfWork.GetHash(newBlock)!))
             {
                 _blockchain.AddBlock(newBlock);
                 _logger.LogInformation("Block {newBlockIndex} mined after {iteration} iterations", newBlockIndex, iteration);
                 _logger.LogInformation("Proof number: {proof}", nonce);
-                var currentHash = _proofOfWork.GetHash(_blockchain.LastBlock);
-                _logger.LogInformation("Previous hash: ..{previousHash} <-> Current hash: ..{currentHash}", lastBlockHash[^5..], currentHash[^5..]);
+                var currentHash = _proofOfWork.GetHash(_blockchain.LastBlock) ?? throw new InvalidOperationException("Block could not be mined");
+                _logger.LogInformation("Previous hash: ..{previousHash} <-> Current hash: ..{currentHash}",
+                    lastBlockHash.GetLastCharacters(5),
+                    currentHash.GetLastCharacters(5));
                 minedSuccesfully = true;
-                _logger.LogInformation("Finished mining block {newBlockIndex}", newBlockIndex);
-                return newBlock;
             }
             nonce = _proofOfWork.GetNewNonce();
             iteration++;
         }
-        throw new InvalidOperationException("Block could not be mined");
+        _logger.LogInformation("+ FINISHED mining block {newBlockIndex}", newBlockIndex);
+        return newBlock ?? throw new InvalidOperationException("");
     }
 }

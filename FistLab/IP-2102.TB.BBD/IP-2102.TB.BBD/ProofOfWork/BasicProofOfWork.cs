@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using IP_2102.TB.BBD.Configs;
+using IP_2102.TB.BBD.CryptoChain;
 using IP_2102.TB.BBD.RandomWrappers;
 using Microsoft.Extensions.Logging;
 
@@ -10,27 +11,28 @@ internal class BasicProofOfWork(IRandomNumerical<int> random, ProofOfWorkArgs ar
 {
     private readonly IRandomNumerical<int> _random = random;
     private readonly ILogger<IProofOfWork> _logger = logger;
-    public int GetProofOfWork(in string lastBlockHash)
+    public string? GetHash(in Block? blockToProve)
     {
-        _logger.LogInformation("Starting proof of work");
-        var nonce = int.Parse(TBConfig.DD + TBConfig.MM);
-        while (!HashWithContainsDifficulty(GetCurrentHash(nonce, lastBlockHash)))
-        {
-            nonce = _random.Next(1, args.NonceMaxValue);
-        }
-        return nonce;
-    }
+        if(blockToProve is null) return null;
 
-    public string GetCurrentHash(in int nonce, in string lastHash)
-    {
-        var guess = nonce.ToString() + lastHash;
         using var sha256 = SHA256.Create();
+        var blockAsString = new StringBuilder();
+        blockAsString.Append(blockToProve.Index)
+                        .Append(blockToProve.TimeStamp)
+                        .Append(blockToProve.Content)
+                        .Append(blockToProve.Proof)
+                        .Append(blockToProve.PreviousHash);
+        
 
-        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(guess));
-        return BitConverter.ToString(hashBytes);
+        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(blockAsString.ToString()));
+        return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
     }
-    public bool HashWithContainsDifficulty(in string hashToCheck)
+    public bool IsHashValid(in string hashToCheck)
     {
         return hashToCheck.EndsWith(args.Difficulty);
+    }
+    public int GetNewNonce()
+    {
+        return _random.Next(args.NonceMaxValue);
     }
 }

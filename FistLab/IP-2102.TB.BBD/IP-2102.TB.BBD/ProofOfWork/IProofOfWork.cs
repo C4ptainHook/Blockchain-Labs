@@ -1,8 +1,10 @@
-﻿namespace IP_2102.TB.BBD.ProofOfWork;
+﻿using IP_2102.TB.BBD.CryptoChain;
+
+namespace IP_2102.TB.BBD.ProofOfWork;
 
 internal interface IProofOfWork
 {
-    int GetProofOfWork(in string lastHash);
-    string GetCurrentHash(in int nonce, in string lastHash);
-    bool HashWithContainsDifficulty(in string hashToCheck);
+    string? GetHash(in Block? blockToProve);
+    bool IsHashValid(in string hashToCheck);
+    int GetNewNonce();
 }

@@ -1,53 +1,49 @@
-﻿using System.Security.Cryptography;
+﻿using System.Collections;
+using System.Security.Cryptography;
 using System.Text;
 using IP_2102.TB.BBD.Transactions;
 
 namespace IP_2102.TB.BBD.CryptoChain;
 
 internal class BlockChain : IBlockChain
-{
+{ 
     private readonly List<Block> _chain = [];
-    private readonly List<Transaction> _currentTransactions = [];
-
-    public Block LastBlock
+    private readonly List<object> _currentTransactions = [];
+    
+    public int LastIndex => _chain.Count - 1;
+    public Block? LastBlock
     {
-        get { return _chain?.Last() ?? throw new InvalidOperationException("No genesis block in the chain"); }
+        get => _chain?.LastOrDefault()!; 
     }
 
-    public BlockChain()
+    public Block this[int index]
     {
-        NewBlock_Boiko(100, "0");
+        get { return _chain[index]; }
     }
 
-    public Block NewBlock_Boiko(int proof, string previousHash)
+    public void AddBlock(Block newBlock)
     {
-        var transactionsCopy = new List<Transaction>(_currentTransactions);
-        var resultBlock = new Block(_chain.Count, transactionsCopy, proof, previousHash);
-        _currentTransactions.Clear();
-        _chain.Add(resultBlock);
-        return resultBlock;
+        _chain.Add(newBlock);
     }
 
-    public int NewTransaction_Boiko(string sender, string recipient, int amount)
+    public int RegisterValue(object value)
     {
-        _currentTransactions.Add(new Transaction(sender, recipient, amount));
+        var transaction = value as Transaction;
+        if (transaction is null)
+        {
+            throw new ArgumentException($"The {nameof(BlockChain)} supports only transactions.");
+        }
+        _currentTransactions.Add(value);
         return _chain.Count;
     }
 
-    public string Hash_Boiko(Block block)
+    public IEnumerator<Block> GetEnumerator()
     {
-        var hashingInputBuilder = new StringBuilder();
+        return _chain.GetEnumerator();
+    }
 
-        hashingInputBuilder.Append(block.Index)
-                           .Append(block.TimeStamp)
-                           .Append(block.Proof)
-                           .Append(block.PreviousHash);
-
-        var hashingInput = hashingInputBuilder.ToString();
-
-        using var sha256 = SHA256.Create();
-
-        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashingInput));
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

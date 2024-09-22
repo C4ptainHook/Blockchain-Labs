@@ -32,11 +32,11 @@ internal class Miner : IMiner
             var newBlock = new Block(new object(), blockArgs);
             if (_proofOfWork.IsHashValid(_proofOfWork.GetHash(newBlock)))
             {
-                _blockchain.AddBlock_Boiko(newBlock);
+                _blockchain.AddBlock(newBlock);
                 _logger.LogInformation("Block {newBlockIndex} mined after {iteration} iterations", newBlockIndex, iteration);
                 _logger.LogInformation("Proof number: {proof}", nonce);
                 var currentHash = _proofOfWork.GetHash(_blockchain.LastBlock);
-                _logger.LogInformation("Previous hash: {previousHash} <-> Current hash: {currentHash}", lastBlockHash, currentHash);
+                _logger.LogInformation("Previous hash: ..{previousHash} <-> Current hash: ..{currentHash}", lastBlockHash[^5..], currentHash[^5..]);
                 minedSuccesfully = true;
                 _logger.LogInformation("Finished mining block {newBlockIndex}", newBlockIndex);
                 return newBlock;
